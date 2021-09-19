@@ -1,4 +1,4 @@
-import {AfterViewInit, Component} from '@angular/core';
+import {AfterViewInit, Component, NgZone} from '@angular/core';
 
 @Component({
   selector: 'app-root',
@@ -12,6 +12,7 @@ import {AfterViewInit, Component} from '@angular/core';
               <button (click)="nope($event)">Click</button>
           </div>
           <button class="trigger-cd-from-zone">Trigger CD on click from Zone.js</button>
+          <div><button class="safe-click">un-triggered CD</button></div>
           <app-child></app-child>
       </div>
       <router-outlet></router-outlet>
@@ -21,6 +22,8 @@ import {AfterViewInit, Component} from '@angular/core';
 export class AppComponent implements AfterViewInit {
   title = 'ng12app';
 
+  constructor(private ngZone: NgZone) {
+  }
 
   ngAfterViewInit(): void {
     /**
@@ -35,6 +38,14 @@ export class AppComponent implements AfterViewInit {
      */
     const button: HTMLElement | null = document.querySelector('.trigger-cd-from-zone');
     button?.addEventListener('click', (e) => this.nope(e));
+
+    /**
+     * don't trigger Change Detection from .safe-click button.
+     */
+    this.ngZone.runOutsideAngular(() => {
+      const safeButton: HTMLElement | null = document.querySelector('.safe-click');
+      safeButton?.addEventListener('click', (e) => this.nope(e));
+    })
   }
 
   nope(e: MouseEvent) {
